@@ -1,6 +1,10 @@
 package org.glenchiridza.cron_job.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -12,8 +16,7 @@ import java.time.LocalDateTime;
 public class MSDelivery {
 
     @Id
-    @GeneratedValue(generator = "sequence_delivery",strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "sequence_delivery",sequenceName = "sequence_delivery")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     private Integer clientId;
     private String deliveryCompany;
