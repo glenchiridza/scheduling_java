@@ -7,5 +7,5 @@ public interface MySqlDbConnection {
 
     ResultSet executeQuery(String sql);
 
-    Connection openConnection();
+    Connection openConnection() throws Exception;
 }
