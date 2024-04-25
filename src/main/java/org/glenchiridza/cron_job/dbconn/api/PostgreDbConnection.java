@@ -5,5 +5,5 @@ import java.sql.ResultSet;
 
 public interface PostgreDbConnection {
     ResultSet executeQuery(String sql);
-    Connection openConnection();
+    Connection openConnection() throws Exception;
 }
