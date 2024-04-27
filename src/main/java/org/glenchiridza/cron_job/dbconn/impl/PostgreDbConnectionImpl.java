@@ -44,9 +44,11 @@ public class PostgreDbConnectionImpl implements PostgreDbConnection {
         ResultSet resultSet = null;
         try{
             log.debug(sql);
+            openConnection();
             Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
-        } catch (SQLException e) {
-            log.error("SQL query error: ",e);
+            statement.executeQuery(sql);
+        } catch (Exception ex) {
+            log.error("SQL query error: ",ex);
         }
         return resultSet;
     }

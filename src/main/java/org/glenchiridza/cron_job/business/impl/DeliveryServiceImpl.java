@@ -7,6 +7,7 @@ import org.glenchiridza.cron_job.dbconn.api.PostgreDbConnection;
 import org.glenchiridza.cron_job.model.MSDelivery;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     private static final String UPDATE_STATEMENT = "UPDATE";
     private final AtomicBoolean isBusy = new AtomicBoolean(false);
 
-    @Value("${mysql-db.query.delivery}")
+    @Value("${postgre-db.query.delivery}")
     private String delivery;
 
     @Value("${mysql-db.query.dataInsertion}")
@@ -36,9 +37,9 @@ public class DeliveryServiceImpl implements DeliveryService {
     private String sql_update;
 
 
-    private MySqlDbConnection mySqlDbConnection;
+    private final MySqlDbConnection mySqlDbConnection;
 
-    private PostgreDbConnection postgreDbConnection;
+    private final PostgreDbConnection postgreDbConnection;
 
 
     public DeliveryServiceImpl(final ApplicationContext context) {
@@ -47,16 +48,17 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
 
+    @Scheduled(cron ="*/20 * * * * *")
     public void deliverySchedule(){
         log.info("starting scheduler.");
         {
             try{
-                if(isBusy.compareAndSet(false,true)){
-                    log.info("there is a schedule that is still in execution process ...");
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-                isBusy.set(true);
+//                if(isBusy.compareAndSet(false,true)){
+//                    log.info("there is a schedule that is still in execution process ...");
+//                    Thread.currentThread().interrupt();
+//                    return;
+//                }
+//                isBusy.set(true);
                 List<MSDelivery> deliveries = getRecentDeliveries();
                 updateDeliverMysqlTable(deliveries);
                 String lastMSDBRunDateTime = getLastRunMysqlDB();
@@ -69,7 +71,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             }catch (Exception ex){
                 log.info("Program on thread: {} ... failed with error ... {}",Thread.currentThread().getId(),ex.toString());
             }finally {
-                isBusy.set(false);
+//                isBusy.set(false);
                 Thread.currentThread().interrupt();
             }
         }
