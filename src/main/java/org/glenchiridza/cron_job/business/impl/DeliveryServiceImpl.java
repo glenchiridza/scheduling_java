@@ -156,7 +156,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                 preparedStatement.setInt(2,delivery.getClientId());
                 preparedStatement.setString(3,delivery.getDeliveryCompany());
                 preparedStatement.setBoolean(4,delivery.getReceivedDelivery());
-                preparedStatement.setObject(5,delivery.getCreatedAt());
+                preparedStatement.setDate(5, (Date) delivery.getCreatedAt());
 
                 int rows = preparedStatement.executeUpdate();
                 if(rows > 0){

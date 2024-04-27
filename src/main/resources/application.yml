@@ -26,7 +26,7 @@ postgre-db:
 
 mysql-db:
   query:
-    dataInsertion: INSERT IGNORE INTO msdelivery(id,clientId,deliveryCompany,receivedDelivery,createdAt)
+    dataInsertion: INSERT IGNORE INTO msdelivery(id,client_id,delivery_company,received_delivery,created_at)
                    VALUES (?,?,?,?,?)
     SQL_INSERT_LAST_RUN: INSERT INTO last_record(record_date_time) VALUES(?)
     SQL_RETRIEVE_LAST_RUN: SELECT record_date_time FROM last_record ORDER BY record_date_time DESC LIMIT 1
