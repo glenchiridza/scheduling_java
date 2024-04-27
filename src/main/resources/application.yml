@@ -19,3 +19,18 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+postgre-db:
+  query:
+    delivery: select * from delivery where created_at between '{lastRunDateTime}' and '{current_date}';
+
+mysql-db:
+  query:
+    dataInsertion: INSERT IGNORE INTO msdelivery(id,clientId,deliveryCompany,receivedDelivery,createdAt)
+                   VALUES (?,?,?,?,?)
+    SQL_INSERT_LAST_RUN: INSERT INTO lastRecord(recordDateTime) VALUES(?)
+    SQL_RETRIEVE_LAST_RUN: SELECT recordDateTime FROM lastRecord ORDER BY recordDateTime DESC LIMIT 1
+    SQL_UPDATE_LAST_RUN: UPDATE lastRecord SET recordDateTime = '{lastRunDateTime}' where id=1;
+
+
+
