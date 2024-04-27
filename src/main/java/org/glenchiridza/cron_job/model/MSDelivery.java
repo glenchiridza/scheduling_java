@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @Builder
@@ -20,5 +21,5 @@ public class MSDelivery {
     private Integer clientId;
     private String deliveryCompany;
     private Boolean receivedDelivery;
-    private LocalDateTime createdAt;
+    private Date createdAt;
 }

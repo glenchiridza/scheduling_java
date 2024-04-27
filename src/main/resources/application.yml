@@ -28,9 +28,9 @@ mysql-db:
   query:
     dataInsertion: INSERT IGNORE INTO msdelivery(id,clientId,deliveryCompany,receivedDelivery,createdAt)
                    VALUES (?,?,?,?,?)
-    SQL_INSERT_LAST_RUN: INSERT INTO lastRecord(recordDateTime) VALUES(?)
-    SQL_RETRIEVE_LAST_RUN: SELECT recordDateTime FROM lastRecord ORDER BY recordDateTime DESC LIMIT 1
-    SQL_UPDATE_LAST_RUN: UPDATE lastRecord SET recordDateTime = '{lastRunDateTime}' where id=1;
+    SQL_INSERT_LAST_RUN: INSERT INTO last_record(record_date_time) VALUES(?)
+    SQL_RETRIEVE_LAST_RUN: SELECT record_date_time FROM last_record ORDER BY record_date_time DESC LIMIT 1
+    SQL_UPDATE_LAST_RUN: UPDATE last_record SET record_date_time = '{lastRunDateTime}' where id=1;
 
 
 

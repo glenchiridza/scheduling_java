@@ -53,16 +53,12 @@ public class DeliveryServiceImpl implements DeliveryService {
         log.info("starting scheduler.");
         {
             try{
-//                if(isBusy.compareAndSet(false,true)){
-//                    log.info("there is a schedule that is still in execution process ...");
-//                    Thread.currentThread().interrupt();
-//                    return;
-//                }
-//                isBusy.set(true);
+
                 List<MSDelivery> deliveries = getRecentDeliveries();
+                log.info("deliveries exported from postgres db into mysql db : \n {}",deliveries);
                 updateDeliverMysqlTable(deliveries);
                 String lastMSDBRunDateTime = getLastRunMysqlDB();
-                if(lastMSDBRunDateTime.isEmpty()){
+                if(lastMSDBRunDateTime == null || lastMSDBRunDateTime.isEmpty()){
                     getCurrentTime(sql_insert);
                 }else{
                     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -71,7 +67,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             }catch (Exception ex){
                 log.info("Program on thread: {} ... failed with error ... {}",Thread.currentThread().getId(),ex.toString());
             }finally {
-//                isBusy.set(false);
+
                 Thread.currentThread().interrupt();
             }
         }
@@ -82,32 +78,34 @@ public class DeliveryServiceImpl implements DeliveryService {
         List<MSDelivery> deliveries = new ArrayList<>();
         String lastRunDateTime = getLastRunMysqlDB();
         String query;
-        String currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String currentTime = LocalDateTime.now().toString();
 
         log.info("last run on mysqldb: {}",lastRunDateTime);
+
         if(!lastRunDateTime.isEmpty()){
-            query = delivery.replace("{lastRunDateTime}",lastDeliveryTime)
+            query = delivery.replace("{lastRunDateTime}",lastRunDateTime)
                     .replace("{current_date}",currentTime);
         }else{
             //on start run, in case the last run date-time table has nothing on first run, start from the time just when the db was first created
-            String oldTime = LocalDateTime.of(2023,1,1,0,2).toString();
-            query = delivery.replace("{lastRunDateTime}",oldTime)
+            query = delivery.replace("{lastRunDateTime}",LocalDateTime.now().minusYears(1).toString())
                     .replace("{current_date}",currentTime);
         }
 
         try{
+
+            System.out.println(query);
             ResultSet resultSet = postgreDbConnection.executeQuery(query);
             if(resultSet == null){
-                log.info("query return 0 deliveries");
+                log.info("query returned 0 deliveries");
             }else{
                 log.info("found new deliveries");
                 while (resultSet.next()){
                     MSDelivery msDelivery = new MSDelivery();
-                    msDelivery.setId(resultSet.getInt(""));
-                    msDelivery.setClientId(resultSet.getInt(""));
-                    msDelivery.setDeliveryCompany(resultSet.getString(""));
-                    msDelivery.setReceivedDelivery(resultSet.getBoolean(""));
-                    msDelivery.setCreatedAt(resultSet.getTimestamp(2).toLocalDateTime());
+                    msDelivery.setId(resultSet.getInt("id"));
+                    msDelivery.setClientId(resultSet.getInt("client_id"));
+                    msDelivery.setCreatedAt(resultSet.getDate("created_at"));
+                    msDelivery.setDeliveryCompany(resultSet.getString("delivery_company"));
+                    msDelivery.setReceivedDelivery(resultSet.getBoolean("received_delivery"));
 
                     deliveries.add(msDelivery);
                     log.info("deliveries :: {}",deliveries);
@@ -131,7 +129,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             if(!sql.contains(UPDATE_STATEMENT)){
-                preparedStatement.setString(1,timestamp.toString());
+                preparedStatement.setString(1,LocalDateTime.now().toString());
             }
 
             int affectedRows = preparedStatement.executeUpdate();
@@ -184,7 +182,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                 log.info("{}",resultSet);
                 log.info("query found lastRecordDateTime");
                 while(resultSet.next()){
-                    lastTime = resultSet.getString("recordDateTime");
+                    lastTime = resultSet.getString("record_date_time");
                     log.info("last recorded date and time :: {}",lastTime);
                 }
             }
