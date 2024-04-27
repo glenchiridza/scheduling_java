@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/deliveries
+    url: jdbc:mysql://localhost:3306/delivery
     username: root
     password: ostentatious
     driver-class-name: com.mysql.cj.jdbc.Driver
