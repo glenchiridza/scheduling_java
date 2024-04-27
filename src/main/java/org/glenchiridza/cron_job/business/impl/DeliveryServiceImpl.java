@@ -5,12 +5,10 @@ import org.glenchiridza.cron_job.business.api.DeliveryService;
 import org.glenchiridza.cron_job.dbconn.api.MySqlDbConnection;
 import org.glenchiridza.cron_job.dbconn.api.PostgreDbConnection;
 import org.glenchiridza.cron_job.model.MSDelivery;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,6 +17,9 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     private static final String UPDATE_STATEMENT = "UPDATE";
     private final AtomicBoolean isBusy = new AtomicBoolean(false);
+
+    @Value("${mysql-db.query.SQL_RETRIEVE_LAST_RUN}")
+    private String lastDeliveryTime;
 
     private MySqlDbConnection mySqlDbConnection;
 
@@ -57,5 +58,29 @@ public class DeliveryServiceImpl implements DeliveryService {
             log.info("error : {}",ex.getMessage());
         }
 
+    }
+
+    private String getLastRunMysqlDB(){
+        String lastTime = "";
+
+        try{
+            String query = lastDeliveryTime;
+            ResultSet resultSet = mySqlDbConnection.executeQuery(query);
+
+            if(resultSet == null){
+                log.info("query return no lastRecordDateTime");
+            }else{
+                log.info("{}",resultSet);
+                log.info("query found lastRecordDateTime");
+                while(resultSet.next()){
+                    lastTime = resultSet.getString("recordDateTime");
+                    log.info("last recorded date and time :: {}",lastTime);
+                }
+            }
+
+        }catch (SQLException ex){
+            return null;
+        }
+        return lastTime;
     }
 }
