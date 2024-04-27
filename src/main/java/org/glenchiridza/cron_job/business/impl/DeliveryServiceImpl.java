@@ -6,8 +6,11 @@ import org.glenchiridza.cron_job.dbconn.api.MySqlDbConnection;
 import org.glenchiridza.cron_job.dbconn.api.PostgreDbConnection;
 import org.glenchiridza.cron_job.model.MSDelivery;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,6 +37,25 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     public void getCurrentTime(String sql) {
+
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+        try{
+            Connection connection = mySqlDbConnection.openConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            if(!sql.contains(UPDATE_STATEMENT)){
+                preparedStatement.setString(1,timestamp.toString());
+            }
+
+            int affectedRows = preparedStatement.executeUpdate();
+            if(affectedRows > 0){
+                log.info("lastRecordDateTime: {}",affectedRows);
+            }
+
+        }catch (Exception ex){
+            log.info("error : {}",ex.getMessage());
+        }
 
     }
 }
