@@ -30,6 +30,12 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Value("${mysql-db.query.SQL_RETRIEVE_LAST_RUN}")
     private String lastDeliveryTime;
 
+    @Value("${mysql-db.query.SQL_INSERT_LAST_RUN}")
+    private String sql_insert;
+    @Value("${mysql-db.query.SQL_UPDATE_LAST_RUN}")
+    private String sql_update;
+
+
     private MySqlDbConnection mySqlDbConnection;
 
     private PostgreDbConnection postgreDbConnection;
@@ -38,6 +44,35 @@ public class DeliveryServiceImpl implements DeliveryService {
     public DeliveryServiceImpl(final ApplicationContext context) {
         this.postgreDbConnection = context.getBean(PostgreDbConnection.class);
         this.mySqlDbConnection = context.getBean(MySqlDbConnection.class);
+    }
+
+
+    public void deliverySchedule(){
+        log.info("starting scheduler.");
+        {
+            try{
+                if(isBusy.compareAndSet(false,true)){
+                    log.info("there is a schedule that is still in execution process ...");
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                isBusy.set(true);
+                List<MSDelivery> deliveries = getRecentDeliveries();
+                updateDeliverMysqlTable(deliveries);
+                String lastMSDBRunDateTime = getLastRunMysqlDB();
+                if(lastMSDBRunDateTime.isEmpty()){
+                    getCurrentTime(sql_insert);
+                }else{
+                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                    getCurrentTime(sql_update.replace("{lastRunDateTime}",timestamp.toString()));
+                }
+            }catch (Exception ex){
+                log.info("Program on thread: {} ... failed with error ... {}",Thread.currentThread().getId(),ex.toString());
+            }finally {
+                isBusy.set(false);
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     @Override
@@ -49,13 +84,13 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         log.info("last run on mysqldb: {}",lastRunDateTime);
         if(!lastRunDateTime.isEmpty()){
-            query = delivery.replace("lastRunDateTime",lastDeliveryTime)
-                    .replace("current_date",currentTime);
+            query = delivery.replace("{lastRunDateTime}",lastDeliveryTime)
+                    .replace("{current_date}",currentTime);
         }else{
             //on start run, in case the last run date-time table has nothing on first run, start from the time just when the db was first created
             String oldTime = LocalDateTime.of(2023,1,1,0,2).toString();
-            query = delivery.replace("lastRunDateTime",oldTime)
-                    .replace("current_date",currentTime);
+            query = delivery.replace("{lastRunDateTime}",oldTime)
+                    .replace("{current_date}",currentTime);
         }
 
         try{
