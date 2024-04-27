@@ -6,7 +6,6 @@ import org.glenchiridza.cron_job.dbconn.api.MySqlDbConnection;
 import org.glenchiridza.cron_job.dbconn.api.PostgreDbConnection;
 import org.glenchiridza.cron_job.model.MSDelivery;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.context.ApplicationContext;
 
 import java.sql.*;
