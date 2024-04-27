@@ -25,6 +25,9 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Value("${mysql-db.query.delivery}")
     private String delivery;
 
+    @Value("${mysql-db.query.dataInsertion}")
+    private String deliveryTransfer;
+
     @Value("${mysql-db.query.SQL_RETRIEVE_LAST_RUN}")
     private String lastDeliveryTime;
 
@@ -67,7 +70,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                     msDelivery.setId(resultSet.getInt(""));
                     msDelivery.setClientId(resultSet.getInt(""));
                     msDelivery.setDeliveryCompany(resultSet.getString(""));
-                    msDelivery.setDeliveryCompany(resultSet.getString(""));
+                    msDelivery.setReceivedDelivery(resultSet.getBoolean(""));
                     msDelivery.setCreatedAt(resultSet.getTimestamp(2).toLocalDateTime());
 
                     deliveries.add(msDelivery);
@@ -104,6 +107,32 @@ public class DeliveryServiceImpl implements DeliveryService {
             log.info("error : {}",ex.getMessage());
         }
 
+    }
+
+    private void updateDeliverMysqlTable(List<MSDelivery> deliveries){
+
+        for(MSDelivery delivery : deliveries){
+            try{
+                String sql = deliveryTransfer;
+                Connection connection = mySqlDbConnection.openConnection();
+
+                PreparedStatement preparedStatement = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+
+                preparedStatement.setInt(1,delivery.getId());
+                preparedStatement.setInt(2,delivery.getClientId());
+                preparedStatement.setString(3,delivery.getDeliveryCompany());
+                preparedStatement.setBoolean(4,delivery.getReceivedDelivery());
+                preparedStatement.setObject(5,delivery.getCreatedAt());
+
+                int rows = preparedStatement.executeUpdate();
+                if(rows > 0){
+                    log.info("new deliveries: {}",rows);
+                }
+            }
+            catch (Exception ex){
+                log.error("error :: {}",ex.getMessage());
+            }
+        }
     }
 
     private String getLastRunMysqlDB(){
