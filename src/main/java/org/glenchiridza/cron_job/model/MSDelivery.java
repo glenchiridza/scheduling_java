@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 public class MSDelivery {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     private Integer clientId;
     private String deliveryCompany;
