@@ -1,0 +1,11 @@
+package org.glenchiridza.cron_job.config;
+
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@Configuration
+@EnableScheduling
+public class ScheduleConfig {
+
+}
